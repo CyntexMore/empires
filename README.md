@@ -6,7 +6,8 @@ An RTS empires game, written in Zig.
 
 ```bash
 nix develop
-zig build -Doptimize=ReleaseFast -Dtarget=native
+zig build -Dtarget=native
+./zig-out/bin/empires
 ```
 
 ## License
