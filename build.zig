@@ -28,6 +28,11 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
 
+    const resources_path = b.pathJoin(&.{ b.build_root.path.?, "resources" });
+    const options = b.addOptions();
+    options.addOption([]const u8, "resources_path", resources_path);
+    exe.root_module.addOptions("build_options", options);
+
     b.installArtifact(exe);
 
     const run_step = b.step("run", "Run the app");
