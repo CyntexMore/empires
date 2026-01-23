@@ -11,6 +11,8 @@ const MapGenerator = @import("map_generator.zig").MapGenerator;
 const empire_mod = @import("empire.zig");
 const factory_mod = @import("factory.zig");
 const resources = @import("resources.zig");
+const textures_mod = @import("textures.zig");
+const IconTextures = textures_mod.IconTextures;
 
 const Empire = empire_mod.Empire;
 const EmpireManager = empire_mod.EmpireManager;
@@ -27,6 +29,7 @@ pub const Game = struct {
     map_generator: MapGenerator,
     empires: EmpireManager,
     factories: FactoryManager,
+    icons: IconTextures,
 
     show_build_menu: bool = false,
     selected_factory_type: ?*const FactoryDef = null,
@@ -73,6 +76,7 @@ pub const Game = struct {
             .empires = empires,
             .factories = factories,
             .last_time = std.time.milliTimestamp(),
+            .icons = try IconTextures.init(),
         };
     }
 
@@ -80,6 +84,7 @@ pub const Game = struct {
         self.factories.deinit();
         self.empires.deinit();
         self.map_generator.deinit(self.grid.map);
+        self.icons.deinit();
     }
 
     pub fn update(self: *Game) void {
@@ -244,6 +249,8 @@ pub const Game = struct {
         const player = self.empires.getLocalPlayer() orelse return;
         const res = player.resources;
 
+        const icon_size: i32 = 16;
+
         rl.drawRectangle(10, 10, 400, 40, rl.Color.init(0, 0, 0, 180));
         rl.drawRectangleLines(10, 10, 400, 40, player.color);
 
@@ -259,28 +266,92 @@ pub const Game = struct {
         x_offset += 70;
 
         // Gold
-        rl.drawCircle(x_offset + 8, y_pos + 10, 8, rl.Color.init(255, 215, 0, 255));
+        rl.drawTexturePro(
+            self.icons.gold,
+            .{
+                .x = 0, .y = 0,
+                .width = @floatFromInt(self.icons.gold.width),
+                .height = @floatFromInt(self.icons.gold.height),
+            },
+            .{
+                .x = @floatFromInt(x_offset),
+                .y = @floatFromInt(y_pos),
+                .width = icon_size,
+                .height = icon_size,
+            },
+            .{ .x = 0, .y = 0 },
+            0,
+            rl.Color.white,
+        );
         x_offset += 20;
         _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{res.gold}) catch {};
         rl.drawText(&buf, x_offset, y_pos, 20, .white);
         x_offset += 60;
 
         // Iron
-        rl.drawCircle(x_offset + 8, y_pos + 10, 8, rl.Color.init(105, 105, 105, 255));
+        rl.drawTexturePro(
+            self.icons.iron,
+            .{
+                .x = 0, .y = 0,
+                .width = @floatFromInt(self.icons.iron.width),
+                .height = @floatFromInt(self.icons.iron.height),
+            },
+            .{
+                .x = @floatFromInt(x_offset),
+                .y = @floatFromInt(y_pos),
+                .width = icon_size,
+                .height = icon_size,
+            },
+            .{ .x = 0, .y = 0 },
+            0,
+            rl.Color.white,
+        );
         x_offset += 20;
         _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{res.iron}) catch {};
         rl.drawText(&buf, x_offset, y_pos, 20, .white);
         x_offset += 60;
 
         // Wood
-        rl.drawCircle(x_offset + 8, y_pos + 10, 8, rl.Color.init(139, 69, 19, 255));
+        rl.drawTexturePro(
+            self.icons.wood,
+            .{
+                .x = 0, .y = 0,
+                .width = @floatFromInt(self.icons.wood.width),
+                .height = @floatFromInt(self.icons.wood.height),
+            },
+            .{
+                .x = @floatFromInt(x_offset),
+                .y = @floatFromInt(y_pos),
+                .width = icon_size,
+                .height = icon_size,
+            },
+            .{ .x = 0, .y = 0 },
+            0,
+            rl.Color.white,
+        );
         x_offset += 20;
         _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{res.wood}) catch {};
         rl.drawText(&buf, x_offset, y_pos, 20, .white);
         x_offset += 60;
 
         // Stone
-        rl.drawCircle(x_offset + 8, y_pos + 10, 8, rl.Color.init(128, 128, 128, 255));
+        rl.drawTexturePro(
+            self.icons.stone,
+            .{
+                .x = 0, .y = 0,
+                .width = @floatFromInt(self.icons.stone.width),
+                .height = @floatFromInt(self.icons.stone.height),
+            },
+            .{
+                .x = @floatFromInt(x_offset),
+                .y = @floatFromInt(y_pos),
+                .width = icon_size,
+                .height = icon_size,
+            },
+            .{ .x = 0, .y = 0 },
+            0,
+            rl.Color.white,
+        );
         x_offset += 20;
         _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{res.stone}) catch {};
         rl.drawText(&buf, x_offset, y_pos, 20, .white);
@@ -340,6 +411,7 @@ pub const Game = struct {
 
             var cost_x = btn_x + 5;
             const cost_y = y + 28;
+            const icon_size: f32 = 12;
 
             if (factory_def.build_cost.coins > 0) {
                 rl.drawText("$", cost_x, cost_y, 12, rl.Color.init(255, 215, 0, 255));
@@ -349,21 +421,69 @@ pub const Game = struct {
                 cost_x += 35;
             }
             if (factory_def.build_cost.wood > 0) {
-                rl.drawCircle(cost_x + 5, cost_y + 6, 5, rl.Color.init(139, 69, 19, 255));
+                rl.drawTexturePro(
+                    self.icons.wood,
+                    .{
+                        .x = 0, .y = 0,
+                        .width = @floatFromInt(self.icons.wood.width),
+                        .height = @floatFromInt(self.icons.wood.height),
+                    },
+                    .{
+                        .x = @floatFromInt(cost_x),
+                        .y = @floatFromInt(cost_y),
+                        .width = icon_size,
+                        .height = icon_size,
+                    },
+                    .{ .x = 0, .y = 0 },
+                    0,
+                    rl.Color.white,
+                );
                 cost_x += 12;
                 _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{factory_def.build_cost.wood}) catch {};
                 rl.drawText(&buf, cost_x, cost_y, 12, rl.Color.init(200, 200, 200, 255));
                 cost_x += 35;
             }
             if (factory_def.build_cost.stone > 0) {
-                rl.drawCircle(cost_x + 5, cost_y + 6, 5, rl.Color.init(128, 128, 128, 255));
+                rl.drawTexturePro(
+                    self.icons.stone,
+                    .{
+                        .x = 0, .y = 0,
+                        .width = @floatFromInt(self.icons.stone.width),
+                        .height = @floatFromInt(self.icons.stone.height),
+                    },
+                    .{
+                        .x = @floatFromInt(cost_x),
+                        .y = @floatFromInt(cost_y),
+                        .width = icon_size,
+                        .height = icon_size,
+                    },
+                    .{ .x = 0, .y = 0 },
+                    0,
+                    rl.Color.white,
+                );
                 cost_x += 12;
                 _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{factory_def.build_cost.stone}) catch {};
                 rl.drawText(&buf, cost_x, cost_y, 12, rl.Color.init(200, 200, 200, 255));
                 cost_x += 35;
             }
             if (factory_def.build_cost.iron > 0) {
-                rl.drawCircle(cost_x + 5, cost_y + 6, 5, rl.Color.init(105, 105, 105, 255));
+                rl.drawTexturePro(
+                    self.icons.iron,
+                    .{
+                        .x = 0, .y = 0,
+                        .width = @floatFromInt(self.icons.iron.width),
+                        .height = @floatFromInt(self.icons.iron.height),
+                    },
+                    .{
+                        .x = @floatFromInt(cost_x),
+                        .y = @floatFromInt(cost_y),
+                        .width = icon_size,
+                        .height = icon_size,
+                    },
+                    .{ .x = 0, .y = 0 },
+                    0,
+                    rl.Color.white,
+                );
                 cost_x += 12;
                 _ = std.fmt.bufPrintZ(&buf, "{d:.0}", .{factory_def.build_cost.iron}) catch {};
                 rl.drawText(&buf, cost_x, cost_y, 12, rl.Color.init(200, 200, 200, 255));
